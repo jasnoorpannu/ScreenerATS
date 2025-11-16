@@ -17,7 +17,7 @@ def check_formatting(resume_text: str) -> dict:
     clean_lines = [l.strip() for l in lines if len(l.strip()) > 1]
 
     # Count bullet points
-    bullet_count = sum(1 for l in clean_lines if l.strip().startswith(("-", "*", "•")))
+    bullet_count = sum(1 for l in clean_lines if l.strip().startswith(("-", "*", "•", "‣", "➔")))
 
     # Detect headings
     headings = [
