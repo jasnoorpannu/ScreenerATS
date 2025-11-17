@@ -1,13 +1,7 @@
 import google.generativeai as genai
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
+MODEL_NAME = "gemini-2.5-flash"
 
-# Configure Gemini
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-MODEL_NAME = "gemini-2.5-flash"   # stable, available, supports generateContent
 
 def _extract_number(text: str) -> float:
     if not text:
@@ -19,24 +13,30 @@ def _extract_number(text: str) -> float:
         return 0.0
 
 
-def _ask_gemini(prompt: str) -> float:
+def _ask_gemini(prompt: str, api_key: str) -> float:
     try:
+        if not api_key or not api_key.strip():
+            print("Gemini: missing api_key")
+            return 0.0
+
+        # configure with provided key (per-request)
+        genai.configure(api_key=api_key)
+
         model = genai.GenerativeModel(MODEL_NAME)
         response = model.generate_content(prompt)
 
         if not response or not hasattr(response, "text"):
-            print("Gemini empty response")
+            print("Gemini returned empty response")
             return 0.0
 
         val = _extract_number(response.text)
-        return max(0, min(val, 100))  # clamp 0–100
-
+        return max(0.0, min(val, 100.0))
     except Exception as e:
         print("Gemini Error:", e)
         return 0.0
 
 
-def llm_relevancy_score(resume_text: str, job_description: str) -> float:
+def llm_relevancy_score(resume_text: str, job_description: str, api_key: str) -> float:
     prompt = f"""
 Rate the resume's overall RELEVANCY for the job description.
 
@@ -46,52 +46,51 @@ Consider:
 - backend relevance
 - domain fit
 
-Return ONLY a number (0–100).
-
+Return ONLY a single numeric score between 0 and 100 (no commentary).
 Resume:
 {resume_text}
 
 Job Description:
 {job_description}
 """
-    return _ask_gemini(prompt)
+    return _ask_gemini(prompt, api_key)
 
 
-def llm_skill_strength(resume_text: str, job_description: str) -> float:
+def llm_skill_strength(resume_text: str, job_description: str, api_key: str) -> float:
     prompt = f"""
-Evaluate the resume's SKILL MATCH against the job description.
+Evaluate how strongly the resume demonstrates the REQUIRED SKILLS from the job description.
 
 Consider:
 - programming languages
-- backend skills
-- APIs, DBs, system knowledge
-- required vs demonstrated skills
+- backend frameworks
+- databases/APIs/system design exposure
+- measurable outcomes
 
-Return ONLY a number (0–100).
+Return ONLY a single numeric score between 0 and 100 (no commentary).
 Resume:
 {resume_text}
 
 Job Description:
 {job_description}
 """
-    return _ask_gemini(prompt)
+    return _ask_gemini(prompt, api_key)
 
 
-def llm_experience_strength(resume_text: str, job_description: str) -> float:
+def llm_experience_strength(resume_text: str, job_description: str, api_key: str) -> float:
     prompt = f"""
-Evaluate the EXPERIENCE strength relative to the job description.
+Evaluate the strength and relevance of the candidate's EXPERIENCE relative to the job.
 
 Consider:
-- project depth
-- internships
-- impact & responsibility
-- backend-related experience
+- seniority fit (intern / junior / mid / senior)
+- project depth & complexity
+- leadership / ownership
+- measurable impact
 
-Return ONLY a number (0–100).
+Return ONLY a single numeric score between 0 and 100 (no commentary).
 Resume:
 {resume_text}
 
 Job Description:
 {job_description}
 """
-    return _ask_gemini(prompt)
+    return _ask_gemini(prompt, api_key)
