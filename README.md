@@ -10,7 +10,7 @@ An intelligent ATS resume analyzer that helps optimize resumes for specific job 
 - Comprehensive scoring breakdown
 - Privacy-first: API keys are never stored
 
-## Live Demo
+## Live Demo Site
 
 https://screenerats.vercel.app
 
