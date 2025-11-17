@@ -1,0 +1,6 @@
+# Exclude Next.js config and generated files from language stats
+frontend/.next/** linguist-generated
+frontend/next.config.* linguist-generated
+frontend/postcss.config.* linguist-generated
+frontend/tailwind.config.* linguist-generated
+*.json linguist-generated
